@@ -1,6 +1,6 @@
 import pprint
 
-from ._utils import _filter_self, ConfigMeta
+from ._utils import ConfigMeta, _filter_self
 from .datasets import DataModule
 from .models import Module
 

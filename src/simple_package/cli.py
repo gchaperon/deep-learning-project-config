@@ -1,26 +1,19 @@
 import dataclasses
-import types
-import click
 import pathlib
+import types
 import typing as tp
-import collections
 
-from omegaconf import OmegaConf
-from . import datasets, models, training
-import rich.table
+import click
 import rich.console
+import rich.box
+import rich.syntax
+import rich.table
+from omegaconf import OmegaConf
+
+from . import datasets, models, training
 from .trainer import Trainer
 
 T = tp.TypeVar("T")
-
-
-class MissingConfigsError(click.ClickException):
-    pass
-
-
-@click.group(context_settings={"show_default": True})
-def cli() -> None:
-    pass
 
 
 class _BaseChoiceAndLookup(click.Choice, tp.Generic[T]):
@@ -44,7 +37,8 @@ class _BaseChoiceAndLookup(click.Choice, tp.Generic[T]):
                 return cls
             else:
                 self.fail(
-                    f"There is no subclass of {self.base.__name__} in module {self.module}"
+                    f"There is no subclass of {self.base.__name__} "
+                    f"in module {self.module}"
                 )
 
         except StopIteration:
@@ -95,13 +89,20 @@ def print_compatibility_matrix(
             function = training.matrix.get((task, model), None)
             # NOTE: on ignore[arg-type], this works but mypy kinda chokes on
             # callable types
-            symbol = symbols.get(function, "[bold]\u03bb[/bold]x.y")  # type: ignore[arg-type]
+            symbol = symbols.get(
+                function, "[bold]\u03bb[/bold]x.y"  # type: ignore[arg-type]
+            )
             row.append(symbol)
         table.add_row(*row)
 
     console = rich.console.Console()
     console.print(table)
     ctx.exit()
+
+
+@click.group(context_settings={"show_default": True})
+def cli() -> None:
+    pass
 
 
 @cli.command()
@@ -111,24 +112,52 @@ def print_compatibility_matrix(
     "--config-file",
     type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
     default="/dev/null",
+    help="A yaml file with config values for the specific task and model chosen.",
 )
-@click.option("-o", "--option", "options", multiple=True)
+@click.option(
+    "-o",
+    "--option",
+    "options",
+    multiple=True,
+    help=(
+        "Extra configuration overrides. The syntax should follow omegaconf's "
+        "dotted notation. Ex: -o model.learn_rate=1e-3"
+    ),
+)
 @click.option(
     "--task-compatibility",
     is_flag=True,
     callback=print_compatibility_matrix,
     expose_value=False,
     is_eager=True,
+    help="""Show the task-model compatibility table and exit. \u2205 means the
+    task-model pair is not compatible, \u03bbx.y means the code has some config
+    values hardcoded (i.e. the given config is modified in the code) and
+    \u03bbx.x means the config is used as is.""",
+)
+@click.option(
+    "--print-config",
+    is_flag=True,
+    help="""Print the configuration that is going to be used for this
+    experiment and exit. Missing values are shown as `???`. Note that a config
+    with missing values is invalid, but it's still shown here.""",
 )
 def train(
     datamodule_cls: type[datasets.DataModule],
     module_cls: type[models.Module],
     config_file: pathlib.Path,
     options: list[str],
+    print_config: bool = False,
 ) -> None:
+    if (datamodule_cls, module_cls) not in training.matrix:
+        raise click.ClickException(
+            "Invalid combination of task and model. "
+            "Run with --task-compatibility to see the available task-model pairs."
+        )
+
     # NOTE: on ignore[name-defined]. This is probably because the config classes
     # are created dynamically, since I didn't want to repeat all the arguments
-    # to each class' __init__. The code works because omegaconf is evaluating
+    # of each model and dataset __init__. The code works because omegaconf is evaluating
     # the types at runtime, where the config classes are indeed defined. This
     # could be fixed (i think) by writing each config class individually.
     @dataclasses.dataclass
@@ -156,8 +185,16 @@ def train(
     conf.task, conf.model = training.matrix[datamodule_cls, module_cls](
         conf.task, conf.model
     )
+    if print_config:
+        console = rich.console.Console()
+        syntax = rich.syntax.Syntax(
+            OmegaConf.to_yaml(conf).strip(), "yaml", background_color="default"
+        )
+        console.print(syntax)
+        return
+
     if any(missing := OmegaConf.missing_keys(conf)):
-        raise MissingConfigsError(
+        raise click.ClickException(
             f"The following config keys are missing: {sorted(missing)}"
         )
 

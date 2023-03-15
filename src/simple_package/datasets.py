@@ -1,7 +1,7 @@
 import pathlib
 import pprint
 
-from ._utils import _filter_self, ConfigMeta
+from ._utils import ConfigMeta, _filter_self
 
 __all__ = ["LitSimpleArgs", "LitComplexArgs"]
 

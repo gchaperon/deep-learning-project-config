@@ -1,7 +1,6 @@
 import pprint
-import typing as tp
 
-from ._utils import _filter_self, ConfigMeta
+from ._utils import ConfigMeta, _filter_self
 
 __all__ = ["LitRNN", "LitLSTM", "LitConvNet"]
 
@@ -19,8 +18,8 @@ class LitRNN(Module):
         vocab_size: int,
         embedding_dim: int,
         hidden_size: int,
-        # NOTE: this should  be Literal["tanh", "relu"], but is not supported
-        # by omegaconf
+        # NOTE: this should  be Literal["tanh", "relu"], but it is not
+        # supported by omegaconf
         nonlinearity: str,
         dropout: float,
         learn_rate: float,
