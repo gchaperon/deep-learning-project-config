@@ -1,18 +1,18 @@
 import pprint
-from ._utils import _filter_self
 
-from .models import Module
+from ._utils import _filter_self, ConfigMeta
 from .datasets import DataModule
+from .models import Module
 
 
-class Trainer:
+class Trainer(metaclass=ConfigMeta):
     def __init__(
         self,
-        max_epochs: int,
-        patience: int,
-        seed: int,
-        experiment: str,
         deterministic: bool,
+        max_epochs: int = 1000,
+        patience: int = 3,
+        seed: int = 123,
+        experiment: str = "default",
     ):
         print(f"called __init__ of {type(self).__name__} with arguments:")
         pprint.pp(_filter_self(locals()))

@@ -1,3 +1,5 @@
 /env/
 /.vimrc
 /tags*
+__pycache__/
+
