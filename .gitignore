@@ -2,4 +2,5 @@
 /.vimrc
 /tags*
 __pycache__/
+*.egg-info/
 

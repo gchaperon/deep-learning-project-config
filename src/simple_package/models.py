@@ -12,7 +12,7 @@ class Module(metaclass=ConfigMeta):
 
 
 class LitRNN(Module):
-    name = "lit-rnn"
+    _name = "lit-rnn"
 
     def __init__(
         self,
@@ -30,20 +30,25 @@ class LitRNN(Module):
 
 
 class LitLSTM(Module):
-    name = "lit-lstm"
+    _name = "lit-lstm"
 
     def __init__(
         self,
         vocab_size: int,
-        embedding_dim: int,
         projection_size: int,
-        learn_rate: float,
+        embedding_dim: int = 300,
+        learn_rate: float = 1e-3,
     ) -> None:
         super().__init__()
         pprint.pp(_filter_self(locals()))
 
 
 class LitConvNet(Module):
-    def __init__(self, input_size: int, output_size: int, learn_rate: int) -> None:
+    def __init__(
+        self,
+        input_size: int,
+        output_size: int,
+        learn_rate: float = 0.1,
+    ) -> None:
         super().__init__()
         pprint.pp(_filter_self(locals()))
