@@ -14,4 +14,7 @@ python -m simple_package train
 ```
 
 ## TODO
-* finish README
+* add examples to README
+* add rationale to README
+* add module docstrings
+
