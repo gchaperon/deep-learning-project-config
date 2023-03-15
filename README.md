@@ -12,3 +12,6 @@ pip install -e .  # or -e '.[dev]' for dev dependencies included
 ```console
 python -m simple_package train
 ```
+
+## TODO
+* finish README
