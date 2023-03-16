@@ -8,6 +8,7 @@ __all__ = ["LitSimpleArgs", "LitComplexArgs"]
 
 class DataModule(metaclass=ConfigMeta):
     def __init__(self) -> None:
+        print()
         print(f"called __init__ of {type(self).__name__} with arguments:")
 
 

@@ -1,0 +1,8 @@
+task:
+  batch_size: 32
+  tokenizer_name: my_cool_tokenizer
+model:
+  input_size: 100
+trainer:
+  deterministic: false
+  max_epochs: 250

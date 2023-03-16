@@ -14,10 +14,12 @@ class Trainer(metaclass=ConfigMeta):
         seed: int = 123,
         experiment: str = "default",
     ):
+        print()
         print(f"called __init__ of {type(self).__name__} with arguments:")
         pprint.pp(_filter_self(locals()))
 
     def fit(self, module: Module, datamodule: DataModule) -> None:
+        print()
         print(
             f"called fit of {type(self).__name__} "
             f"with module of type {type(module).__name__} "

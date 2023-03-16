@@ -193,14 +193,12 @@ def train(
         console.print(syntax)
         return
 
+    # validate config
     if any(missing := OmegaConf.missing_keys(conf)):
         raise click.ClickException(
             f"The following config keys are missing: {sorted(missing)}"
         )
 
-    print("Final config used")
-    print(OmegaConf.to_yaml(conf))
-    # validate config
     module, datamodule = module_cls(**conf.model), datamodule_cls(**conf.task)
     trainer = Trainer(**conf.trainer)
     trainer.fit(module, datamodule)

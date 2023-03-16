@@ -7,6 +7,7 @@ __all__ = ["LitRNN", "LitLSTM", "LitConvNet"]
 
 class Module(metaclass=ConfigMeta):
     def __init__(self) -> None:
+        print()
         print(f"called __init__ of {type(self).__name__} with arguments:")
 
 
