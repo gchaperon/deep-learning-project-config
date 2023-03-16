@@ -67,15 +67,14 @@ I'm still not to sold on this ordering, maybe the task-model specifics should
 come second and allow for overriding in config files and command line. And
 maybe I would like to add env vars to the list as well. Nonetheless, for now
 this suffices as a proof of concept and this should be easy to change and
-expand, since this precedence order is quite explicit in the code [here](link
-to cli.py lines).
+expand, since this precedence order is quite explicit in the code [here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
 
-## install
+## Install
 ```console
 pip install -e .  # or -e '.[dev]' for dev dependencies included
 ```
 
-## try it out
+## Try it out
 ### Simple options
 Check the available options with
 ```console
