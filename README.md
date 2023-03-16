@@ -1,6 +1,6 @@
 # deep-learning-project-config
 Repo to try out ideas on how to config a CLI for a project with multiple models
-and tasks.  Trying out tools like click, typer, omegaconf, hydra, etc.
+and tasks.  Trying out tools like click, omegaconf, rich, etc.
 
 One of the problems I've faced when running deep learning experiments on many
 _tasks_ (a `LightningDataModule` for example) and models in the same project is
