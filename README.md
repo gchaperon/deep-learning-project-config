@@ -2,14 +2,12 @@
 Repo to try out ideas on how to config a CLI for a project with multiple models
 and tasks.  Trying out tools like click, omegaconf, rich, etc.
 
-One of the problems I've faced when running deep learning experiments on many
-_tasks_ (a `LightningDataModule` for example) and models in the same project is
-that altough there are many-to-many compatibilities between tasks and models,
-_instatiating_ these classes isn't homogeneous.
-
-The compatibility between a task and a model is given by the dataloader's
-return type and model's forward method, but many times instantiating models and
-tasks differs between the different architectures or data source. Normally I end up with code that looks like this:
+One of the problems I've faced when runnning deep learning experiments on many
+tasks with many models, is that I want CLI that looks kinda like this
+```console
+mycli train --task <task_name> --model <model_name> ... <extra options>
+```
+but in my cli code I always end up with things like this
 ```python
 if model_name == "lit-rnn":
     model = models.LitRNN(args.vocab_size, args.activation, ...)
@@ -18,56 +16,8 @@ elif model_name == "lit-transformer":
 elif ...:
     # etc
 ```
-And pretty much the same for the data sources.
-
-Altough a common `__init__` interface could be enforced, I felt that was a hack
-around the intrinsic differences between the models instead of robust solution.
-
-In this repo I try to explore a solution to this that leaves me sufficiently
-satisfied.
-
-
-Also, I wanted to allow configurations to come from many sources, namely
-hardcoded defaults, config files and command line arguments. Defaults + config
-files are useful when developing models and we want to run the same code
-repeatedly with the same parameters, while command line options are useful when
-we want to quickly try out different configurations. If we want to do a more
-thoruogh hyper param search I would write a new command specific for that, but
-that is out of scope for this project (for now).
-
-For my use cases there has been a final configuration source which is a special
-config requirements for some task model pairs. Sometimes some task model pair
-requires specific configurations, and I wanted to be able to write custom code
-to "register" this special interaction. I've faced this specifically when
-using tokenizers as a param to my data source, where the vocab size of my
-model should match the vocab size of the tokenizer, which isn't really a hparam
-to my data source, but a _property_ of one of it's components. In my head a
-configuration for this would look like
-```python
-def configure_task_a_model_b(...):
-    # ...
-    # all the previous configs
-    # ...
-    tokenizer = tokenizers.Tokenizer.load(task.tokenizer_name)
-    # define some arbitrary relation between args
-    config.model.vocab_size = tokenizer.vocab_size
-    return config
-```
-Possibly this is a bad design in many other ways, but what's in this repo is
-the best solution I could come up with.
-
-And so, the final precedence of config sources is (from least important to
-most)
-1. hard-coded defaults
-2. config files
-3. command line options
-4. custom task-model configuration
-
-I'm still not to sold on this ordering, maybe the task-model specifics should
-come second and allow for overriding in config files and command line. And
-maybe I would like to add env vars to the list as well. Nonetheless, for now
-this suffices as a proof of concept and this should be easy to change and
-expand, since this precedence order is quite explicit in the code [here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
+I don't like how the code looks and in this repo I try to explore a solution to
+this that leaves me sufficiently satisfied.
 
 ## Install
 ```console
@@ -75,6 +25,15 @@ pip install -e .  # or -e '.[dev]' for dev dependencies included
 ```
 
 ## Try it out
+### Preliminaries
+You might want to look at
+[`models.py`](https://github.com/gchaperon/deep-learning-project-config/blob/master/src/simple_package/models.py)
+and
+[`datasets.py`](https://github.com/gchaperon/deep-learning-project-config/blob/master/src/simple_package/datasets.py)
+which contain simple dummy classes with common init signatures. These classes
+are used to simulate instantiating real pytorch classes.
+
+
 ### Simple options
 Check the available options with
 ```console
@@ -137,6 +96,63 @@ classes. Since I commonly use Pytorch Lightning, that is all that is needed to
 train a model with a datasource, and so it is straightforward how to apply this
 CLI structure to an actual `LightningModule` + `LightningDataModule`.
 
+
+## Rationale
+One of the problems I've faced when running deep learning experiments on many
+_tasks_ (a `LightningDataModule` for example) and models in the same project is
+that altough there are many-to-many compatibilities between tasks and models,
+_instatiating_ these classes isn't homogeneous.
+
+The compatibility between a task and a model is given by the dataloader's
+return type and model's forward method, but many times instantiating models and
+tasks differs between the different architectures or data source. Normally I end up with code that looks like this:
+And pretty much the same for the data sources.
+
+Altough a common `__init__` interface could be enforced, I felt that was a hack
+around the intrinsic differences between the models instead of robust solution.
+
+
+Also, I wanted to allow configurations to come from many sources, namely
+hardcoded defaults, config files and command line arguments. Defaults + config
+files are useful when developing models and we want to run the same code
+repeatedly with the same parameters, while command line options are useful when
+we want to quickly try out different configurations. If we want to do a more
+thoruogh hyper param search I would write a new command specific for that, but
+that is out of scope for this project (for now).
+
+For my use cases there has been a final configuration source which is a special
+config requirements for some task model pairs. Sometimes some task model pair
+requires specific configurations, and I wanted to be able to write custom code
+to "register" this special interaction. I've faced this specifically when
+using tokenizers as a param to my data source, where the vocab size of my
+model should match the vocab size of the tokenizer, which isn't really a hparam
+to my data source, but a _property_ of one of it's components. In my head a
+configuration for this would look like
+```python
+def configure_task_a_model_b(...):
+    # ...
+    # all the previous configs
+    # ...
+    tokenizer = tokenizers.Tokenizer.load(task.tokenizer_name)
+    # define some arbitrary relation between args
+    config.model.vocab_size = tokenizer.vocab_size
+    return config
+```
+Possibly this is a bad design in many other ways, but what's in this repo is
+the best solution I could come up with.
+
+And so, the final precedence of config sources is (from least important to
+most)
+1. hard-coded defaults
+2. config files
+3. command line options
+4. custom task-model configuration
+
+I'm still not to sold on this ordering, maybe the task-model specifics should
+come second and allow for overriding in config files and command line. And
+maybe I would like to add env vars to the list as well. Nonetheless, for now
+this suffices as a proof of concept and this should be easy to change and
+expand, since this precedence order is quite explicit in the code [here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
 
 ## Epilog
 
