@@ -170,4 +170,4 @@ behaviour could've been accomplished by designing this a bit differentlly.
 
 ## TODO
 * add module docstrings
-
+* add the return values of each command in the examples
