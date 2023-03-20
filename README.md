@@ -89,6 +89,7 @@ $ python -m simple_package train --task-compatibility
 | lit-simple-args  | ∅            | λx.x     | λx.x    |
 ```
 </details>
+
 Read the help message (using the `--help` flag) for the legend used.
 
 ### Running experiments
@@ -124,6 +125,7 @@ trainer:
   experiment: default
 ```
 </details>
+
 The `???` value means that said config value hasn't been set, and the
 experiment run will fail because the config is incomplete. The values already
 there are defaults set in the code.
@@ -177,6 +179,7 @@ trainer:
   experiment: default
 ```
 </details>
+
 See how the values we specified are now peresent in the config.
 
 To simplify the process of configuring the app, we can pass a config file
@@ -206,8 +209,9 @@ trainer:
   experiment: default
 ```
 </details>
+
 Here the config file defines some missing values, but also overrides some
-default values (`trainer.max_epochs`) for example. The rest of missing options
+default values ( `trainer.max_epochs` ) for example. The rest of missing options
 could be filled in from the command line.
 
 Now lets run a complete example, where the config file contains all the
@@ -242,6 +246,7 @@ called __init__ of Trainer with arguments:
 called fit of Trainer with module of type LitRNN and datamodule of type LitSimpleArgs
 ```
 </details>
+
 The command simply prints how it initialized the task, model and trainer
 classes. Since I commonly use Pytorch Lightning, that is all that is needed to
 train a model with a datasource, and so it is straightforward how to apply this
@@ -318,7 +323,7 @@ expand, since this precedence order is quite explicit in the code
 
 Your are encouraged to read the source code, I left module docstrings in most
 so understanding the role of each is easier. Roughly, `cli.py` configures the
-CLI and `datasets.py`. `models.py` and `trainer.py` define mock objects of what
+CLI and `datasets.py`, `models.py` and `trainer.py` define mock objects of what
 would be real objects in a deep learning projects (possibly using Pytorch
 Lightning). `training.py` defines training utilities, which for this small
 project is only a task-model compatibility matrix, and allows for registering
@@ -330,4 +335,3 @@ behaviour could've been accomplished by designing this a bit differentlly.
 
 ## TODO
 * add module docstrings
-* add the return values of each command in the examples
