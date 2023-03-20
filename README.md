@@ -317,17 +317,20 @@ come second and allow for overriding in config files and command line. And
 maybe I would like to add env vars to the list as well. Nonetheless, for now
 this suffices as a proof of concept and this should be easy to change and
 expand, since this precedence order is quite explicit in the code
-[here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
+[here](src/simple_package/cli.py#L175).
 
 ## Epilog
 
 Your are encouraged to read the source code, I left module docstrings in most
-so understanding the role of each is easier. Roughly, `cli.py` configures the
-CLI and `datasets.py`, `models.py` and `trainer.py` define mock objects of what
-would be real objects in a deep learning projects (possibly using Pytorch
-Lightning). `training.py` defines training utilities, which for this small
-project is only a task-model compatibility matrix, and allows for registering
-custom configuration code.
+so understanding the role of each is easier. Roughly,
+[`cli.py`](src/simple_package/cli.py) configures the CLI and
+[`datasets.py`](src/simple_package/datasets.py),
+[`models.py`](src/simple_package/models.py) and
+[`trainer.py`](src/simple_package/trainer.py) define mock objects of what would
+be real objects in a deep learning projects (possibly using Pytorch Lightning).
+[`training.py`](src/simple_package/training.py) defines training utilities,
+which for this small project is only a task-model compatibility matrix, and
+allows for registering custom configuration code.
 
 **Disclaimer**: I sprinkled some dynamic classes and metaclasses here and
 there, which is totally unnecesary, but I wanted to try out stuff. The same
