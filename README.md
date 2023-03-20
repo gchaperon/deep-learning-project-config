@@ -39,11 +39,57 @@ Check the available options with
 ```console
 python -m simple_package train --help
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train --help
+Usage: python -m simple_package train [OPTIONS]
+
+Options:
+  -t, --task [lit-complex-args|lit-simple-args]
+                                  [required]
+  -m, --model [lit-conv-net|lit-lstm|lit-rnn]
+                                  [required]
+  --config-file FILE              A yaml file with config values for the
+                                  specific task and model chosen.  [default:
+                                  /dev/null]
+  -o, --option TEXT               Extra configuration overrides. The syntax
+                                  should follow omegaconf's dotted notation.
+                                  Ex: -o model.learn_rate=1e-3
+  --task-compatibility            Show the task-model compatibility table and
+                                  exit. ∅ means the task-model pair is not
+                                  compatible, λx.y means the code has some
+                                  config values hardcoded (i.e. the given
+                                  config is modified in the code) and λx.x
+                                  means the config is used as is.
+  --print-config                  Print the configuration that is going to be
+                                  used for this experiment and exit. Missing
+                                  values are shown as `???`. Note that a
+                                  config with missing values is invalid, but
+                                  it's still shown here.
+  --help                          Show this message and exit.
+```
+</details>
 
 Check the available task model pairs
 ```console
 python -m simple_package train --task-compatibility
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train --task-compatibility
+                task/model compatibility                
+                                                        
+|                  | lit-conv-net | lit-lstm | lit-rnn |
+|------------------|--------------|----------|---------|
+| lit-complex-args | λx.x         | λx.y     | ∅       |
+| lit-simple-args  | ∅            | λx.x     | λx.x    |
+```
+</details>
+
 Read the help message (using the `--help` flag) for the legend used.
 
 ### Running experiments
@@ -56,6 +102,30 @@ since values can come from different sources.
 ```console
 python -m simple_package train -t lit-complex-args -m lit-conv-net --print-config
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train -t lit-complex-args -m lit-conv-net --print-config
+task:
+  datadir: ???
+  batch_size: ???
+  val_size: ???
+  tokenizer_name: ???
+  transforms: ???
+model:
+  input_size: ???
+  output_size: ???
+  learn_rate: 0.1
+trainer:
+  deterministic: ???
+  max_epochs: 1000
+  patience: 3
+  seed: 123
+  experiment: default
+```
+</details>
+
 The `???` value means that said config value hasn't been set, and the
 experiment run will fail because the config is incomplete. The values already
 there are defaults set in the code.
@@ -65,31 +135,117 @@ You can see the error message with the same command as before but without
 ```console
 python -m simple_package train -t lit-complex-args -m lit-conv-net
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train -t lit-complex-args -m lit-conv-net
+Error: The following config keys are missing: ['model.input_size', 'model.output_size', 'task.batch_size', 'task.datadir', 'task.tokenizer_name', 'task.transforms', 'task.val_size', 'trainer.deterministic']
+```
+</details>
 
 To run a succesful experiment you need to provide a complete configuration,
 meaning the `???` values should be filled in. To do this there are 2 options
-(well 3, but lets not consider _modifying the source code_ a valid option).
+(well 3, but let's not consider _modifying the source code_ a valid option).
 
 First you can simply pass config values using the `-o` option. The syntax used
 is the dotted notation from
 [omegaconf](https://omegaconf.readthedocs.io/en/2.3_branch/usage.html#from-a-dot-list).
 To add `determinist=True` to the trainer and `batch_size=32` to the task we
-would do
+could do
 ```console
 python -m simple_package train -t lit-complex-args -m lit-conv-net -o trainer.deterministic=true -o task.batch_size=32 --print-config
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train -t lit-complex-args -m lit-conv-net -o trainer.deterministic=true -o task.batch_size=32 --print-config
+task:
+  datadir: ???
+  batch_size: 32
+  val_size: ???
+  tokenizer_name: ???
+  transforms: ???
+model:
+  input_size: ???
+  output_size: ???
+  learn_rate: 0.1
+trainer:
+  deterministic: true
+  max_epochs: 1000
+  patience: 3
+  seed: 123
+  experiment: default
+```
+</details>
+
 See how the values we specified are now peresent in the config.
 
 To simplify the process of configuring the app, we can pass a config file
 ```console
 python -m simple_package train -t lit-complex-args -m lit-conv-net --config-file conf/incomplete-example.yaml --print-config
 ```
-Here the config file defines some missing values, but also overrides some default values (`trainer.max_epochs`) for example. The rest of missing options could be filled in from the command line.
+<details>
+<summary>[output]</summary>
 
-Now lets run a complete example, where the config file contains all the necessary keys but we want to override the batch size from the command line.
+```console
+$ python -m simple_package train -t lit-complex-args -m lit-conv-net --config-file conf/incomplete-example.yaml --print-config
+task:
+  datadir: ???
+  batch_size: 32
+  val_size: ???
+  tokenizer_name: my_cool_tokenizer
+  transforms: ???
+model:
+  input_size: 100
+  output_size: ???
+  learn_rate: 0.1
+trainer:
+  deterministic: false
+  max_epochs: 250
+  patience: 3
+  seed: 123
+  experiment: default
+```
+</details>
+
+Here the config file defines some missing values, but also overrides some
+default values ( `trainer.max_epochs` ) for example. The rest of missing options
+could be filled in from the command line.
+
+Now lets run a complete example, where the config file contains all the
+necessary keys but we want to override the batch size from the command line.
 ```console
 python -m simple_package train -t lit-simple-args -m lit-rnn --config-file conf/complete-example.yaml -o task.batch_size=1024
 ```
+<details>
+<summary>[output]</summary>
+
+```console
+$ python -m simple_package train -t lit-simple-args -m lit-rnn --config-file conf/complete-example.yaml -o task.batch_size=1024
+
+called __init__ of LitRNN with arguments:
+{'vocab_size': 30000,
+ 'embedding_dim': 100,
+ 'hidden_size': 200,
+ 'nonlinearity': 'relu',
+ 'dropout': 0.3,
+ 'learn_rate': 0.001}
+
+called __init__ of LitSimpleArgs with arguments:
+{'datadir': 'data', 'batch_size': 1024, 'num_workers': 4}
+
+called __init__ of Trainer with arguments:
+{'deterministic': False,
+ 'max_epochs': 1000,
+ 'patience': 3,
+ 'seed': 123,
+ 'experiment': 'default'}
+
+called fit of Trainer with module of type LitRNN and datamodule of type LitSimpleArgs
+```
+</details>
 
 The command simply prints how it initialized the task, model and trainer
 classes. Since I commonly use Pytorch Lightning, that is all that is needed to
@@ -105,12 +261,20 @@ _instatiating_ these classes isn't homogeneous.
 
 The compatibility between a task and a model is given by the dataloader's
 return type and model's forward method, but many times instantiating models and
-tasks differs between the different architectures or data source. Normally I end up with code that looks like this:
+tasks differs between the different architectures or data source. Normally I
+end up with code that looks like this:
+```python
+if model_name == "lit-rnn":
+    model = models.LitRNN(args.vocab_size, args.activation, ...)
+elif model_name == "lit-transformer":
+    model = models.LitTransformer(args.vocab_size, args.attention_layers, args.projection_size, ...)
+elif ...:
+    # etc
+```
 And pretty much the same for the data sources.
 
 Altough a common `__init__` interface could be enforced, I felt that was a hack
 around the intrinsic differences between the models instead of robust solution.
-
 
 Also, I wanted to allow configurations to come from many sources, namely
 hardcoded defaults, config files and command line arguments. Defaults + config
@@ -152,13 +316,14 @@ I'm still not to sold on this ordering, maybe the task-model specifics should
 come second and allow for overriding in config files and command line. And
 maybe I would like to add env vars to the list as well. Nonetheless, for now
 this suffices as a proof of concept and this should be easy to change and
-expand, since this precedence order is quite explicit in the code [here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
+expand, since this precedence order is quite explicit in the code
+[here](https://github.com/gchaperon/deep-learning-project-config/blob/b4312ca05081dca6851e09bb70eae726e5e89ca8/src/simple_package/cli.py#L175).
 
 ## Epilog
 
 Your are encouraged to read the source code, I left module docstrings in most
 so understanding the role of each is easier. Roughly, `cli.py` configures the
-CLI and `datasets.py`. `models.py` and `trainer.py` define mock objects of what
+CLI and `datasets.py`, `models.py` and `trainer.py` define mock objects of what
 would be real objects in a deep learning projects (possibly using Pytorch
 Lightning). `training.py` defines training utilities, which for this small
 project is only a task-model compatibility matrix, and allows for registering
@@ -170,4 +335,3 @@ behaviour could've been accomplished by designing this a bit differentlly.
 
 ## TODO
 * add module docstrings
-* add the return values of each command in the examples
